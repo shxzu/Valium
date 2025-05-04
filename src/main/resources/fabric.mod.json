@@ -26,5 +26,5 @@
     "java": ">=21",
     "fabric-api": "*"
   },
-  "accessWidener": "nexus.accesswidener"
+  "accessWidener": "valium.accesswidener"
 }
