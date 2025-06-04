@@ -62,7 +62,6 @@ public class Scaffold extends Module {
 
     public static final BooleanSetting extraCps = new BooleanSetting("Extra CPS", false);
     public static final BooleanSetting telly = new BooleanSetting("Telly", false);
-    public static final BooleanSetting andromeda = new BooleanSetting("Andromeda", false);
     public static final BooleanSetting eagle = new BooleanSetting("Eagle", false);
     public static final NumberSetting eagleEveryXBlocks = new NumberSetting("Sneak every X blocks", 1, 10, 1, 1);
     public static final BooleanSetting raycat = new BooleanSetting("Raycast", false);
@@ -71,7 +70,7 @@ public class Scaffold extends Module {
 
     public Scaffold() {
         super("Scaffold", "Bridges for you", 0, ModuleCategory.PLAYER);
-        this.addSettings(rotMode, sprint, sprintMode, keepY, keepYMode, keepYLowHop, tower, towerMode, towerSprint, constantMotionValue, constantMotionJumpGroundValue, extraCps, telly, andromeda, eagle, eagleEveryXBlocks, raycat, strictRaycast, supastrictraycast);
+        this.addSettings(rotMode, sprint, sprintMode, keepY, keepYMode, keepYLowHop, tower, towerMode, towerSprint, constantMotionValue, constantMotionJumpGroundValue, extraCps, telly, eagle, eagleEveryXBlocks, raycat, strictRaycast, supastrictraycast);
         sprintMode.addDependency(sprint, true);
         keepYMode.addDependency(keepY, true);
         keepYLowHop.addDependency(keepY, true);
@@ -179,9 +178,9 @@ public class Scaffold extends Module {
         }
 
         if (MoveUtils.isMoving2()) {
-            if (telly.getValue() || andromeda.getValue()) {
+            if (telly.getValue()) {
                 if (mc.player.isOnGround() && !mc.options.jumpKey.isPressed() && mc.player.hurtTime == 0 && MoveUtils.isMoving2()) {
-                    event.setJumping(!andromeda.getValue() || !mc.world.getBlockState(mc.player.getBlockPos().up().up()).isAir());
+                    event.setJumping(!mc.world.getBlockState(mc.player.getBlockPos().up().up()).isAir());
                 }
             } else {
                 if (keepY.getValue() && keepYMode.isMode("Normal")) {
@@ -189,10 +188,9 @@ public class Scaffold extends Module {
                         event.setJumping(true);
                     }
                 }
-                if (keepY.getValue() && keepYMode.isMode("Watchdog") && MoveUtils.isMoving2() && blocksPlaced >= 1) {
-                    if (mc.player.isOnGround() && !mc.options.jumpKey.isPressed()) {
+                if (keepY.getValue() && keepYMode.isMode("Watchdog")) {
+                    if (mc.player.isOnGround() && !mc.options.jumpKey.isPressed() && !Client.INSTANCE.getModuleManager().getModule(Speed.class).isEnabled()) {
                         event.setJumping(true);
-                        hypixelKeepYDelay = 3;
                     }
                 }
             }
@@ -206,13 +204,9 @@ public class Scaffold extends Module {
             rotations = null;
             scaffYCoord = 0;
             blocksPlaced = 0;
-            hypixelSprint = false;
             return;
         }
 
-        if (hypixelKeepYDelay > 0) {
-            hypixelKeepYDelay--;
-        }
 
         if (eagle.getValue()) {
             if (mc.options.jumpKey.isPressed()) {
@@ -304,26 +298,16 @@ public class Scaffold extends Module {
                 }
             }
             if (keepYMode.isMode("Watchdog")) {
-                if (mc.options.jumpKey.isPressed() || mc.player.getPos().y < scaffYCoord) {
+                if (!mc.options.jumpKey.isPressed()) {
+                    if (mc.player.isOnGround()) {
+                        scaffYCoord = (int) (mc.player.getPos().y - 1);
+                    }
+                } else {
                     scaffYCoord = (int) (mc.player.getPos().y - 1);
-                    blocksPlaced = 0;
-                    hypixelSprint = false;
                 }
             }
         } else {
-            if (andromeda.getValue()) {
-                if (keepYMode.isMode("Normal")) {
-                    if (!mc.options.jumpKey.isPressed()) {
-                        if (mc.player.isOnGround()) {
-                            scaffYCoord = (int) (mc.player.getPos().y - 1);
-                        }
-                    } else {
-                        scaffYCoord = (int) (mc.player.getPos().y - 1);
-                    }
-                }
-            } else {
                 scaffYCoord = (int) (mc.player.getPos().y - 1);
-            }
         }
     }
 
@@ -348,11 +332,6 @@ public class Scaffold extends Module {
 
     private void updateRots() {
         if (rotMode.isMode("None")) {
-            return;
-        }
-
-        if (hypixelKeepYDelay > 0) {
-            rotations = new float[]{(float) (mc.player.getYaw() - getRandom() * 5), MathUtils.clamp_float((float) (mc.player.getPitch() - getRandom() * 5), -90, 90)};
             return;
         }
 
@@ -409,23 +388,9 @@ public class Scaffold extends Module {
                     }
                 }
             }
-
-            if (andromeda.getValue()) {
-                if (ScaffoldUtils.getBlockData(0, 3, 0) != null) {
-                    blockData = ScaffoldUtils.getBlockData(0, 3, 0);
-                } else {
-                    return;
-                }
-            } else {
-                return;
-            }
         }
 
         updateRots();
-
-        if (hypixelKeepYDelay > 0) {
-            return;
-        }
 
         if (doTellyShit()) {
             return;
