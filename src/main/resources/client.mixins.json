@@ -1,7 +1,7 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "dev.shxzu.valium.mixin",
+  "package": "dev.sinxkyuna.valium.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "accesors.AbstractBlockAccessor",
